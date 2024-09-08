@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1008280881998",
+    "project_id": "fireauthiti",
+    "storage_bucket": "fireauthiti.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1008280881998:android:957ff57d3b2d8997d62c1f",
+        "android_client_info": {
+          "package_name": "com.example.graduation_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDigcHFZS0glodmxbd8PoNtcSEc0UJpvWw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
