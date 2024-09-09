@@ -1,13 +1,14 @@
-// ignore_for_file: prefer_const_constructors, duplicate_ignore
-
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:graduation_project/Theme.dart';
 import 'package:graduation_project/cart_screen.dart';
 import 'package:graduation_project/create_new_product_screen.dart';
+import 'package:graduation_project/favorite_screen.dart';
+import 'package:graduation_project/models/product_model.dart';
+import 'package:graduation_project/product_details.dart';
+import 'package:graduation_project/services/product_service.dart';
+import 'package:graduation_project/favorite_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-
-import 'models/product_model.dart';
-import 'product_details.dart';
-import 'services/product_service.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({Key? key}) : super(key: key);
@@ -18,43 +19,42 @@ class ProductScreen extends StatefulWidget {
 
 class _ProductScreenState extends State<ProductScreen> {
   bool isLoading = true;
-
   List<Product> products = [];
   final productService = ProductServices();
   int tabIndex = 0;
 
-  get_Product() async {
-    if (products.isNotEmpty) {
-      setState(() {
-        products = [];
-      });
-    }
+  // Fetch products from the service
+  Future<void> get_Product() async {
+    setState(() {
+      isLoading = true;
+      products = [];
+    });
     try {
       var prod = await productService.getProducts();
-
       setState(() {
-        isLoading = false;
         products = prod;
       });
     } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("This page cannot load")),
+      );
+    } finally {
       setState(() {
         isLoading = false;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("This page can not load"),
-        ));
       });
     }
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     get_Product();
   }
 
   @override
   Widget build(BuildContext context) {
+    final favoriteProvider = Provider.of<FavoriteProvider>(context);
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -65,132 +65,141 @@ class _ProductScreenState extends State<ProductScreen> {
             ),
           );
         },
-        child: Icon(Icons.edit),
+        child: const Icon(Icons.edit),
       ),
-      // ignore: prefer_const_literals_to_create_immutables
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: tabIndex,
         onTap: (index) {
           setState(() {
             tabIndex = index;
           });
-          if (tabIndex == 1) {
-            Navigator.push(
+          if (tabIndex == 0) {
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (_) => CartScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const ProductScreen()),
+            );
+          } else if (tabIndex == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) =>  FavoriteScreen()),
+            );
+          } else if (tabIndex == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const CartScreen()),
             );
           }
         },
-        // ignore: prefer_const_literals_to_create_immutables, duplicate_ignore
-        items: [
-          // ignore: prefer_const_constructors
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+        items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_bag_rounded), label: "Cart"),
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
         ],
       ),
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Products",
           style: TextStyle(fontSize: 25),
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-            },
-            child: Text(
-              "Logout",
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
+         IconButton(onPressed: () async {
+        try {
+          await FirebaseAuth.instance.signOut(); // Sign out the user
+          Navigator.of(context).pushReplacementNamed('/login'); // Navigate to login screen
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error logging out. Please try again.")),
+          );
+        };},
+             icon: Icon(Icons.logout_outlined))
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            if (isLoading)
-              Row(
-                children: const [
-                  CircularProgressIndicator(),
-                ],
-              ),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await get_Product();
-                },
-                //child: ListView.builder(
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, mainAxisExtent: 500),
-                  itemCount: products.length,
-                  itemBuilder: ((context, index) {
-                    final item = products[index];
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Card(
-                        child: Column(
-                          children: [
-                            if (isLoading == true)
-                              Row(
-                                // ignore: prefer_const_literals_to_create_immutables
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: get_Product,
+                      child: GridView.builder(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisExtent: 500,
+                        ),
+                        itemCount: products.length,
+                        itemBuilder: (context, index) {
+                          final product = products[index];
+                          final isFavorite = favoriteProvider.isFavorite(product);
+
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Card(
+                              child: Column(
                                 children: [
-                                  CircularProgressIndicator(),
-                                ],
-                              ),
-                            Image.network(
-                              item.imageUrl,
-                              height: 200,
-                            ),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            Text(
-                              "${item.price} \$",
-                              style: TextStyle(
-                                  fontSize: 25,
-                                  color: Colors.red[400],
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            Text(
-                              item.productTitle,
-                              style: TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ProductDetails(
-                                      productId: item.id,
+                                  Image.network(
+                                    product.imageUrl,
+                                    height: 200,
+                                  ),
+                                  const SizedBox(height: 15),
+                                  Text(
+                                    "\$${product.price}",
+                                    style: TextStyle(
+                                      fontSize: 25,
+                                      color: Colors.red[400],
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                );
-                              },
-                              child: Text(
-                                "More info",
-                                style: TextStyle(fontSize: 18),
+                                  const SizedBox(height: 15),
+                                  Text(
+                                    product.productTitle,
+                                    style: const TextStyle(
+                                      fontSize: 19,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ProductDetails(productId: product.id),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text(
+                                      "More info",
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                                      color: isFavorite ? Colors.red : Colors.grey,
+                                    ),
+                                    onPressed: () {
+                                      favoriteProvider.toggleFavorite(product);
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  }),
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

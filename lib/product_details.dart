@@ -4,6 +4,7 @@ import 'package:graduation_project/models/cart_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'Theme.dart';
 import 'models/product_model.dart';
 import 'services/product_service.dart';
 
@@ -57,7 +58,10 @@ class _ProductDetailsState extends State<ProductDetails> {
           if (isLoading == true)
             Row(
               children: const [
-                CircularProgressIndicator(),
+                CircularProgressIndicator(
+                    strokeWidth: 6,
+
+),
               ],
             ),
           if (details != null)
