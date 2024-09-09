@@ -14,6 +14,9 @@ class RegistrationScreen extends StatefulWidget {
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final firstNameController = TextEditingController();
+  final fullNameController = TextEditingController();
+  bool _obscureText= true;
 
   void register() async {
     Auth auth = Auth();
@@ -54,11 +57,36 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         child: Column(
           children: [
             Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                controller: firstNameController,
+                decoration:InputDecoration(
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                label: Text("First Name"),
+                ),
+                
+              ),
+            ), Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                controller: fullNameController,
+                  decoration:InputDecoration(
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                  hintText:"Full Name",
+                  label: Text("Full Name"),
+                  ),
+                  
+                ),
+            ),
+            
+            Padding(
               padding: EdgeInsets.all(8.0),
-              child: TextField(
+              child: TextFormField(
+                
                 controller: emailController,
                 decoration: InputDecoration(
-                    border: OutlineInputBorder(),
+                  
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
                     icon: Icon(
                       Icons.email_sharp,
                       size: 30,
@@ -69,11 +97,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ),
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: TextField(
+              child: TextFormField(
                 obscureText: true,
+                
                 controller: passwordController,
                 decoration: InputDecoration(
-                    border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock),  // Lock icon as prefix
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscureText ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: () {
+            setState(() {
+              _obscureText = !_obscureText;  
+            });
+          },
+        ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
                     icon: Icon(
                       Icons.lock,
                       size: 30,

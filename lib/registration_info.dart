@@ -21,12 +21,16 @@ class _RegisterInfoState extends State<RegisterInfo> {
           children: [
             Text("${FirebaseAuth.instance.currentUser?.email}"),
             Text("${FirebaseAuth.instance.currentUser?.uid}"),
-            ElevatedButton(
-              onPressed: () {
-                FirebaseAuth.instance.signOut();
-              },
-              child: const Text("Logout"),
-            ),
+            IconButton(onPressed: () async {
+        try {
+          await FirebaseAuth.instance.signOut(); // Sign out the user
+          Navigator.of(context).pushReplacementNamed('/login'); // Navigate to login screen
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error logging out. Please try again.")),
+          );
+        };},
+             icon: Icon(Icons.logout_outlined))
           ],
         ),
       ),

@@ -15,13 +15,17 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  bool _obscureText=true;
   void login() async {
     Auth auth = Auth();
     try {
       await auth.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
+        
       );
+            Navigator.pushReplacementNamed(context, '/product');
+
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -59,10 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: TextField(
+              child: TextFormField(
                 controller: emailController,
                 decoration: InputDecoration(
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
                     icon: Icon(
                       Icons.email_sharp,
                       size: 30,
@@ -73,11 +77,22 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: TextField(
+              child: TextFormField(
                 obscureText: true,
                 controller: passwordController,
                 decoration: InputDecoration(
-                    border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock),  // Lock icon as prefix
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscureText ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: () {
+            setState(() {
+              _obscureText = !_obscureText;  // Toggle password visibility
+            });
+          },
+        ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
                     icon: Icon(
                       Icons.lock,
                       size: 30,

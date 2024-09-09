@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:graduation_project/product_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'models/cart_provider.dart';
@@ -19,6 +19,15 @@ class _CartScreenState extends State<CartScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Cart"),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => ProductScreen()),
+            );
+          },
+        ),
       ),
       body: SafeArea(
         child: Column(
@@ -60,7 +69,6 @@ class _CartScreenState extends State<CartScreen> {
                 },
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  // ignore: prefer_const_literals_to_create_immutables
                   children: [
                     Icon(Icons.delete),
                     Text("Clear Cart"),
